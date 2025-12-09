@@ -26,7 +26,12 @@ const upload = multer({
   }
 });
 
-const TILE_COLS = 170, TILE_ROWS = 170, SECTION_GRID = 24, TILE_SIZE = 7; // ~1200x1200 output
+// Cloud-friendly settings: fewer tiles + smaller color grid for Render free tier
+const TILE_COLS = 60;       
+const TILE_ROWS = 60;       
+const SECTION_GRID = 12;    
+const TILE_SIZE = 16;       
+
 const desktop = path.join(os.homedir(), "Desktop");
 const DESKTOP_OUT_DIR = path.join(desktop, "mosaic_output");
 
@@ -63,13 +68,19 @@ async function precomputeSections(img, file, sections) {
 
 async function buildPortraitMosaic(portraitPath, galleryPaths, outPathFile) {
   const target = await Jimp.read(portraitPath);
+  // Keep portrait image smaller to reduce memory use
+const MAX_TARGET = 800;
+if (target.bitmap.width > MAX_TARGET || target.bitmap.height > MAX_TARGET) {
+  target.resize(MAX_TARGET, Jimp.AUTO, Jimp.RESIZE_BILINEAR);
+}
+
   const targetSmall = target.clone().resize(TILE_COLS, TILE_ROWS, Jimp.RESIZE_BILINEAR);
 
   const gallery = [];
   for (const gPath of galleryPaths) {
     try {
       const img = await Jimp.read(gPath);
-      const maxDim = 1000;
+      const maxDim = 500;   //changed from 1000 to 500
       if (img.bitmap.width > maxDim || img.bitmap.height > maxDim)
         img.resize(Math.min(img.bitmap.width, maxDim), Jimp.AUTO, Jimp.RESIZE_BILINEAR);
       const sections = await precomputeSections(img, path.basename(gPath), SECTION_GRID);
@@ -129,3 +140,6 @@ app.post("/upload", upload.fields([{ name: "portrait", maxCount: 1 }, { name: "g
 
 app.use("/output", express.static(path.resolve("output")));
 app.listen(PORT, () => console.log(`🌐 Server running on http://localhost:${PORT}`));
+
+Optimize mosaic settings for Render memory limits
+
