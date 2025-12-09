@@ -141,5 +141,5 @@ app.post("/upload", upload.fields([{ name: "portrait", maxCount: 1 }, { name: "g
 app.use("/output", express.static(path.resolve("output")));
 app.listen(PORT, () => console.log(`🌐 Server running on http://localhost:${PORT}`));
 
-Optimize mosaic settings for Render memory limits
+//Optimize mosaic settings for Render memory limits
 
