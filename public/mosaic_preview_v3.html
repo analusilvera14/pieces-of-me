@@ -1,0 +1,513 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pieces of Me — Mosaic Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Fonts similar to Canva look -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f7edf7;
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #2b2629;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1220px;
+      padding: 28px 24px 20px;
+    }
+
+    /* TOP NAV */
+    .top-nav {
+      display: flex;
+      justify-content: flex-end;
+      gap: 48px;
+      font-size: 0.9rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .top-nav span {
+      cursor: default;
+    }
+
+    /* MAIN FRAME */
+    .frame {
+      background: #fdf8fb;
+      border-radius: 24px;
+      border: 1px solid #e5d6e8;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+      padding: 32px 40px 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 32px;
+    }
+
+    @media (max-width: 980px) {
+      .frame {
+        grid-template-columns: 1fr;
+        padding: 24px 20px 22px;
+      }
+    }
+
+    /* LEFT SIDE — TEXT + FORM */
+    .title {
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-size: 3.1rem;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 0.98rem;
+      max-width: 480px;
+      line-height: 1.6;
+      color: #534c52;
+      margin-bottom: 30px;
+    }
+
+    .section-label {
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    .field-group {
+      margin-bottom: 22px;
+    }
+
+    .pill-input {
+      border-radius: 999px;
+      border: 2px dotted #2b2629;
+      background: #fff;
+      padding: 8px 14px;
+    }
+
+    .pill-input input[type="file"] {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #2b2629;
+    }
+
+    .pill-input input[type="file"]::file-selector-button {
+      font-family: inherit;
+      font-size: 0.9rem;
+      border-radius: 999px;
+      border: 1px solid #b7b0bd;
+      background: #f5f2f6;
+      padding: 4px 14px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .pill-input input[type="file"]:focus {
+      outline: none;
+    }
+
+    .field-caption {
+      margin-top: 6px;
+      text-align: center;
+      font-size: 0.8rem;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: #6a6269;
+    }
+
+    .file-count {
+      margin-top: 4px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #4a4349;
+    }
+
+    .primary-btn {
+      margin-top: 18px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 2px dotted #2b2629;
+      background: linear-gradient(135deg, #c49cfb, #f1a8ff);
+      color: #2b2629;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(181, 135, 255, 0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.1s ease;
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.55;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .primary-btn:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(181, 135, 255, 0.45);
+    }
+
+    .primary-btn:not(:disabled):active {
+      transform: translateY(0);
+      box-shadow: 0 9px 18px rgba(181, 135, 255, 0.35);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: #5a5259;
+      min-height: 18px;
+      text-align: left;
+    }
+
+    .status.ok   { color: #1c7a3b; }
+    .status.error { color: #b3261e; }
+
+    /* PROGRESS BAR */
+    .progress-wrap {
+      margin-top: 8px;
+      display: none; /* shown only while processing */
+    }
+
+    .progress-bar-outer {
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: #e2d6ec;
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #c49cfb, #f1a8ff);
+      transition: width 0.2s ease;
+    }
+
+    .progress-label {
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: #867a8a;
+      text-align: right;
+    }
+
+    /* RIGHT SIDE — MOSAIC PREVIEW */
+    .preview-wrapper {
+      border-radius: 18px;
+      overflow: hidden;
+      background: #e3d4dd;
+      border: 1px solid #d1c2cb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 360px;
+    }
+
+    .preview-placeholder {
+      font-size: 0.9rem;
+      color: #534c52;
+      text-align: center;
+      padding: 16px;
+      max-width: 260px;
+    }
+
+    .preview-image {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-tag {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .download-link {
+      position: absolute;
+      bottom: 14px;
+      right: 16px;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.96);
+      text-decoration: none;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px 10px;
+      border-radius: 999px;
+      backdrop-filter: blur(4px);
+      display: none;
+    }
+
+    .download-link:hover {
+      text-decoration: underline;
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #6a6269;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- TOP NAV -->
+    <nav class="top-nav">
+      <span>ABOUT</span>
+      <span>PORTFOLIO</span>
+      <span>CONTACT</span>
+    </nav>
+
+    <!-- MAIN CARD -->
+    <div class="frame">
+      <!-- LEFT: TEXT + FORM -->
+      <div>
+        <h1 class="title">Pieces of Me</h1>
+        <p class="subtitle">
+          Upload a portrait and a collection of memories. Watch as they assemble themselves —
+          each fragment becoming part of a whole that feels both intimate and infinite.
+        </p>
+
+        <div class="section-label">Upload Your Images</div>
+
+        <form id="uploadForm">
+          <div class="field-group">
+            <div class="pill-input">
+              <input type="file" id="portraitInput" name="portrait" accept="image/*" required />
+            </div>
+            <div class="field-caption">Portrait to recreate</div>
+          </div>
+
+          <div class="field-group">
+            <div class="pill-input">
+              <input
+                type="file"
+                id="galleryInput"
+                name="gallery"
+                accept="image/*"
+                multiple
+                required
+              />
+            </div>
+            <div class="field-caption">
+              Gallery images (20–40 recommended, max 50)
+            </div>
+            <div id="galleryCount" class="file-count"></div>
+          </div>
+
+          <button type="submit" id="buildBtn" class="primary-btn">
+            Generate Mosaic
+          </button>
+
+          <div id="status" class="status"></div>
+
+          <!-- Minimal progress bar -->
+          <div class="progress-wrap" id="progressWrap">
+            <div class="progress-bar-outer">
+              <div class="progress-bar-inner" id="progressBar"></div>
+            </div>
+            <div class="progress-label" id="progressLabel"></div>
+          </div>
+        </form>
+      </div>
+
+      <!-- RIGHT: MOSAIC PREVIEW -->
+      <div class="preview-wrapper">
+        <span class="preview-tag" id="previewMeta">MOSAIC PREVIEW</span>
+        <div id="previewPlaceholder" class="preview-placeholder">
+          After you upload your portrait and gallery and click “Generate Mosaic”,
+          your mosaic portrait will appear here.
+        </div>
+        <img id="resultImage" class="preview-image" alt="Mosaic result" />
+        <a id="downloadLink" class="download-link" href="#" download>
+          Download image
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      © 2025 Pieces of Me — by Ana Silvera · created through fragments, light, and memory.
+    </footer>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const portraitInput = document.getElementById("portraitInput");
+    const galleryInput = document.getElementById("galleryInput");
+    const galleryCount = document.getElementById("galleryCount");
+    const statusEl = document.getElementById("status");
+    const buildBtn = document.getElementById("buildBtn");
+    const previewMeta = document.getElementById("previewMeta");
+    const previewPlaceholder = document.getElementById("previewPlaceholder");
+    const resultImage = document.getElementById("resultImage");
+    const downloadLink = document.getElementById("downloadLink");
+
+    const progressWrap = document.getElementById("progressWrap");
+    const progressBar = document.getElementById("progressBar");
+    const progressLabel = document.getElementById("progressLabel");
+
+    let progressInterval = null;
+    let progressValue = 0;
+
+    galleryInput.addEventListener("change", () => {
+      const count = galleryInput.files.length;
+      galleryCount.textContent = count
+        ? `${count} image${count === 1 ? "" : "s"} selected`
+        : "";
+    });
+
+    function setStatus(message, type) {
+      statusEl.textContent = message || "";
+      statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function updateProgress(val) {
+      progressValue = val;
+      progressBar.style.width = progressValue + "%";
+      progressLabel.textContent = progressValue
+        ? `Building mosaic… ${progressValue}%`
+        : "";
+    }
+
+    function startProgress() {
+      if (progressInterval) clearInterval(progressInterval);
+      progressWrap.style.display = "block";
+      updateProgress(0);
+
+      // Simulated, gentle progress up to 88%, then wait for real completion
+      progressInterval = setInterval(() => {
+        if (progressValue < 88) {
+          updateProgress(progressValue + 1);
+        }
+      }, 250); // ~22s to reach 88%
+    }
+
+    function finishProgress(success) {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+
+      if (success) {
+        updateProgress(100);
+        progressLabel.textContent = "Mosaic complete — 100%";
+      } else {
+        // Leave whatever % it had, but indicate stopped
+        if (progressValue === 0) {
+          progressWrap.style.display = "none";
+        } else {
+          progressLabel.textContent = "Stopped";
+        }
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const portraitFile = portraitInput.files[0];
+      const galleryFiles = galleryInput.files;
+
+      if (!portraitFile) {
+        setStatus("Please choose a portrait image.", "error");
+        return;
+      }
+
+      if (!galleryFiles || galleryFiles.length < 20) {
+        setStatus("Please select at least 20 gallery images.", "error");
+        return;
+      }
+
+      if (galleryFiles.length > 50) {
+        setStatus("Maximum 50 gallery images allowed.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("portrait", portraitFile);
+      Array.from(galleryFiles).forEach((file) => {
+        formData.append("gallery", file);
+      });
+
+      buildBtn.disabled = true;
+      setStatus("Building your mosaic… this may take a moment.", "info");
+      previewMeta.textContent = "GENERATING…";
+      startProgress();
+
+      try {
+        const response = await fetch("/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setStatus(data.error || "Failed to create mosaic.", "error");
+          previewMeta.textContent = "MOSAIC PREVIEW";
+          finishProgress(false);
+          return;
+        }
+
+        if (data.output) {
+          const url = data.output;
+
+          resultImage.src = url + "?t=" + Date.now(); // bust cache
+          resultImage.style.display = "block";
+          previewPlaceholder.style.display = "none";
+          previewMeta.textContent = "MOSAIC READY";
+
+          downloadLink.href = url;
+          downloadLink.style.display = "inline";
+
+          setStatus("Mosaic created successfully!", "ok");
+          finishProgress(true);
+        } else {
+          setStatus("Unexpected response from server.", "error");
+          previewMeta.textContent = "MOSAIC PREVIEW";
+          finishProgress(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus("Something went wrong while uploading or processing.", "error");
+        previewMeta.textContent = "MOSAIC PREVIEW";
+        finishProgress(false);
+      } finally {
+        buildBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
